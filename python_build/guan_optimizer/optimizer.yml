@@ -18,7 +18,7 @@ solver:
   max_inner_iterations: 500
   max_outer_iterations: 10
   penalty_weight_update_factor: 5.0
-  tolerance: 0.0001
+  tolerance: 5000.0
 tcp:
   ip: 127.0.0.1
   port: 8333

@@ -21,10 +21,10 @@ const NUM_STATIC_PARAMETERS: usize = 9;
 const NUM_DECISION_VARIABLES: usize = 120;
 
 /// Number of ALM-type constraints (dimension of F1, i.e., n1)
-const NUM_CONSTRAINTS_TYPE_ALM: usize = 0;
+const NUM_CONSTRAINTS_TYPE_ALM: usize = 300;
 
 /// Number of penalty constraints (dimension of F2, i.e., n2)
-const NUM_CONSTRAINTS_TYPE_PENALTY: usize = 0;
+const NUM_CONSTRAINTS_TYPE_PENALTY: usize = 150;
 
 use libc::{c_double, c_int};  // might need to include: c_longlong, c_void
 

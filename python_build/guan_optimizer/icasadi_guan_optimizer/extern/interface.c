@@ -20,8 +20,8 @@
  * + Problem
  *   + vars: 120
  *   + parameters: 9
- *   + n1: 0
- *   + n2: 0
+ *   + n1: 300
+ *   + n2: 150
  *
  */
 #include <stdlib.h>
@@ -43,13 +43,13 @@
 #define NP_GUAN_OPTIMIZER 9
 
 /* Dimension of F1 (number of ALM constraints) */
-#define N1_GUAN_OPTIMIZER 0
+#define N1_GUAN_OPTIMIZER 300
 
 /* Dimension of F2 (number of PM constraints) */
-#define N2_GUAN_OPTIMIZER 0
+#define N2_GUAN_OPTIMIZER 150
 
 /* Dimension of xi = (c, y) */
-#define NXI_GUAN_OPTIMIZER 0
+#define NXI_GUAN_OPTIMIZER 301
 
 /* Preconditioning Flag */
 

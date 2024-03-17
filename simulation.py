@@ -1,4 +1,3 @@
-import casadi as cs
 import opengen as og
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -8,9 +7,9 @@ mng = og.tcp.OptimizerTcpManager("python_build/guan_optimizer")
 mng.start()
 
 mps2kmph = 3.6
-x_state_0 = [0, 20, 20 / mps2kmph, 0.3, 0, 0, 0, 0, 0]
+x_state_0 = [0,20, 20/mps2kmph, 0.3, 0, 0, 0, 0, 0]
 
-simulation_steps = 4000
+simulation_steps = 3000
 
 state_sequence = x_state_0
 input_sequence = []
@@ -30,8 +29,8 @@ C_D = 0.3
 A = 1.746
 Q_bat = 3.6 * 10**3 * 4.47
 R_bat = 1.2
-T = 0.2
-T2 = 0.2
+T = 0.1
+T2 = 0.1
 r = 0.287
 G = 7.9377
 f_brk = 0
@@ -79,16 +78,11 @@ p12 =   7.772e-09
 p03 =   4.646e-06
 
 def dynamic_dt(states, controls):
-    [states_dot, outputs] = imanishisource_car_long(states, controls)
-    r = []
-    for i in range(NX):
-        r.append(states[i] + sampling_time * states_dot[i])
-    return r
+    states_dot = imanishisource_car_long(states, controls)
+    return [states[i] + sampling_time * states_dot[i] for i in range(NX)]
 
 def imanishisource_car_long(states, controls):
     # Extract states
-    s = states[0]
-    sp = states[1]
     v = states[2]
     xi = states[3]
     omega_e = states[4]
@@ -144,23 +138,17 @@ def imanishisource_car_long(states, controls):
     switching_dot = (tilde_switch - switching) / T2
     tau_mg_dot = (tilde_tau_mg - tau_mg) / T
 
-    states_dot = np.array([s_dot, sp_dot, v_dot, xi_dot, omega_e_dot, tau_e_dot, inv_g_dot, switching_dot, tau_mg_dot])
-
-    # Outputs
-    dummyout = 0
-    dummy1 = 0
-    outputs = np.array([dummyout, dummy1])
-    return states_dot, outputs
+    states_dot = [s_dot, sp_dot, v_dot, xi_dot, omega_e_dot, tau_e_dot, inv_g_dot, switching_dot, tau_mg_dot]
+    return states_dot
 
 x = x_state_0
 for k in range(simulation_steps):
-    #x_np = np.array(x).flatten()
     solver_status = mng.call(x)
     us = solver_status['solution']
     u = us[0:NU]
     x_next = dynamic_dt(x, u)
     state_sequence += x_next
-    input_sequence += [u]
+    input_sequence += u
     x = x_next
 
 mng.kill()
@@ -177,44 +165,53 @@ inv_g = state_sequence[6:NX*simulation_steps+6:NX]
 switching = state_sequence[7:NX*simulation_steps+7:NX]
 tau_mg = state_sequence[8:NX*simulation_steps+8:NX]
 
+# s_p - s
+B = [a - b for a, b in zip(sp, s)]
+
+u_1 = input_sequence[0:NU*simulation_steps:NU]
+u_2 = input_sequence[1:NU*simulation_steps+1:NU]
+u_3 = input_sequence[2:NU*simulation_steps+2:NU]
+u_4 = input_sequence[3:NU*simulation_steps+3:NU]
+
+
 plt.figure(figsize=(10, 8))
 
 # Plot each state in a subplot
 plt.subplot(3, 3, 1)
-plt.plot(time, s)
-plt.title('s')
+plt.plot(time, B)
+plt.title('sp-s')
 
 plt.subplot(3, 3, 2)
-plt.plot(time, sp)
-plt.title('sp')
-
-plt.subplot(3, 3, 3)
 plt.plot(time, v)
 plt.title('v')
 
-plt.subplot(3, 3, 4)
+plt.subplot(3, 3, 3)
 plt.plot(time, xi)
 plt.title('xi')
 
-plt.subplot(3, 3, 5)
-plt.plot(time, omega_e)
-plt.title('omega_e')
-
-plt.subplot(3, 3, 6)
-plt.plot(time, tau_e)
-plt.title('tau_e')
-
-plt.subplot(3, 3, 7)
+plt.subplot(3, 3, 4)
 plt.plot(time, inv_g)
 plt.title('inv_g')
 
-plt.subplot(3, 3, 8)
+plt.subplot(3, 3, 5)
 plt.plot(time, switching)
 plt.title('switching')
 
-plt.subplot(3, 3, 9)
+plt.subplot(3, 3, 6)
 plt.plot(time, tau_mg)
 plt.title('tau_mg')
+
+plt.subplot(3, 3, 7)
+plt.plot(time, u_2)
+plt.title('tilde_inv_g')
+
+plt.subplot(3, 3, 8)
+plt.plot(time, u_3)
+plt.title('tilde_switch')
+
+plt.subplot(3, 3, 9)
+plt.plot(time, u_4)
+plt.title('tilde_tau_mg')
 
 plt.tight_layout()
 plt.show()
